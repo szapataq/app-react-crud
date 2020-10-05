@@ -1,108 +1,111 @@
-// ------------------FUNDAMENTOS-----------------------
-// import React from 'react';
-// import Parrafo from './components/Fundamentos/Parrafo';
-// import Variables from './components/Fundamentos/Variables';
-// import Eventos from './components/Fundamentos/Eventos';
-// import Contador from './components/Fundamentos/Contador';
-// import Lista from './components/Fundamentos/Lista';
-// import Formulario from './components/Fundamentos/Formulario';
-
-
-// function App() {
-//   return (
-//     <div className = "container mt-5">
-//       <h2>Curso react</h2>
-//       <Parrafo/>
-//       <Variables/>
-//       <Eventos/>
-//       <Contador/>
-//       <Lista/>
-//       <Formulario/>
-//     </div>
-//   );
-// }
-
-// ------------------CRUD-----------------------
-import React from 'react';
-import shortid from 'shortid';
+import React, { useState } from "react";
+import shortid from "shortid";
+import Title from "./components/Title";
 
 function App() {
-
-  const [tarea, setTarea] = React.useState('');
-  const [list, setList] = React.useState([]);
-  const [modoEdicion, setModoEdicion] = React.useState(false);
+  const [tarea, setTarea] = useState("");
+  const [listTareas, setListTareas] = useState([]);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [id, setId] = useState("");
+  const [error, setError] = useState(null);
 
   const agregarTarea = (e) => {
     e.preventDefault();
-    if(!tarea.trim()){
-      console.log('no hay tarea');
+    if (tarea.trim() === "") {
+      setError("Llene el campo...");
       return;
     }
-    // e.target.reset();
-    setList([
-      ...list,
-      {id: shortid.generate(), nameTarea: tarea}
+    setListTareas([
+      ...listTareas,
+      { id: shortid.generate(), nombreTarea: tarea },
     ]);
-    setTarea('');
-    console.log('agregada');
+    setTarea("");
+    setError(null);
   };
 
-  const EliminarTares = (id) => {
-    // console.log(id);
-    const listaFiltrada = list.filter(item=> item.id !== id);
-    setList(listaFiltrada);
+  const eliminarTarea = (id) => {
+    const arrayFiltrado = listTareas.filter((item) => item.id !== id);
+    setListTareas(arrayFiltrado);
   };
 
-  const EditarTarea = (item ) => {
-    console.log(item);
+  const editarUI = (tarea) => {
+    console.log(tarea);
     setModoEdicion(true);
-    setTarea(item.nameTarea);
+    setTarea(tarea.nombreTarea);
+    setId(tarea.id);
   };
 
+  const editarTarea = (e) => {
+    e.preventDefault();
+    if (tarea.trim() === "") {
+      setError("Escriba algo por favor...");
+      return;
+    }
+    const arrayEditable = listTareas.map((item) =>
+      item.id === id ? { id: id, nombreTarea: tarea } : item
+    );
+    setListTareas(arrayEditable);
+    setModoEdicion(false);
+    setTarea("");
+    setId("");
+    setError(null);
+  };
   return (
-    <div className = "container mt-5">
-      <h2 className="text-center">Curso react </h2>
-      <hr/>
+    <div className="container">
+      <h1 className="text-center mt-5"> CRUD SIMPLE</h1>
+      <hr />
       <div className="row">
         <div className="col-8">
-          <h4 className="text-center">Lista de tareas</h4>
-          <ul className="list-group">
-            {
-              list.map((item) => (
-                <li className="list-group-item" key={ item.id }>
-                  <span className="lead">{ item.nameTarea }</span>
-                  <button 
+          <Title nombre={"Lista de tareas"} />
+          {listTareas.length === 0 ? (
+            <span className="text-center">¡Ups! no hay tareas</span>
+          ) : (
+            <ul className="list-group">
+              {listTareas.map((item) => (
+                <li className="list-group-item" key={item.id}>
+                  <span>{item.nombreTarea}</span>
+                  <button
                     className="btn btn-danger btn-sm float-right mx-2"
-                    onClick={()=>EliminarTares(item.id)}
-                    > Eliminar
+                    onClick={() => eliminarTarea(item.id)}
+                  >
+                    Eliminar
                   </button>
-                  <button 
-                    className="btn btn-warning btn-sm float-right"
-                    onClick={() => { EditarTarea(item) }}> 
+                  <button
+                    className="btn btn-warning btn-sm float-right mx-2"
+                    onClick={() => editarUI(item)}
+                  >
                     Editar
                   </button>
-              </li>
-              ))
-            }
-          </ul>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+
         <div className="col-4">
-          <h4 className="text-center">{
-            modoEdicion ? 'Editar tarea' : 'Agregar tarea'
-          }</h4>
-          <form onSubmit={agregarTarea}>
-            <input 
-              type="text" 
+          {modoEdicion ? (
+            <Title nombre={"Editar tarea"} />
+          ) : (
+            <Title nombre={"Formulario"} />
+          )}
+          {error ? <span className="text-danger">{error}</span> : null}
+          <form onSubmit={modoEdicion ? editarTarea : agregarTarea}>
+            <input
+              type="text"
               className="form-control mb-2"
-              placeholder="Ingrese tareas"
+              placeholder="Ingrese tarea"
               onChange={(e) => setTarea(e.target.value)}
               value={tarea}
             />
-            {
-              modoEdicion ? 
-              (<button className="btn btn-warning btn-block" type="submit">Editar</button>) :
-              (<button className="btn btn-dark btn-block" type="submit">Agregar</button>)
-            }
+            {modoEdicion ? (
+              <button className="btn btn-warning btn-block" type="submit">
+                Editar
+              </button>
+            ) : (
+              <button className="btn btn-dark btn-block" type="submit">
+                Agregar
+              </button>
+            )}
           </form>
         </div>
       </div>
@@ -110,4 +113,3 @@ function App() {
   );
 }
 export default App;
-
